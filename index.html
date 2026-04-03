@@ -68,7 +68,7 @@
             pointer-events: none;
         }
         .lane {
-            width: 70px;
+            width: 90px; /* ★ レーンの幅を広くしました */
             height: 100%;
             background: rgba(255, 255, 255, 0.02);
             border-left: 1px solid rgba(255, 255, 255, 0.05);
@@ -81,6 +81,11 @@
             background: rgba(255, 121, 198, 0.02);
             border-left: 1px solid rgba(255, 121, 198, 0.1);
             border-right: 1px solid rgba(255, 121, 198, 0.1);
+        }
+
+        /* スマホ向けにレーン幅を画面に収める */
+        @media (max-width: 768px) {
+            .lane { width: 13vw; }
         }
 
         /* 判定ライン */
@@ -100,20 +105,23 @@
         .note {
             position: absolute;
             width: 100%;
-            height: 35px;
+            height: 30px; /* ショートノーツの厚みを少しシャープに */
             border-radius: 4px;
-            bottom: 100%;
+            bottom: 100%; /* レーンのトップから降ってくる */
             box-shadow: 0 0 10px currentColor;
             background-color: currentColor;
             z-index: 5;
+            will-change: transform;
         }
 
         /* ロングノーツ (LN) */
         .note.long-note {
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
+            /* 頭の30pxだけ濃く、残りの胴体を半透明にするマスク */
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
             box-shadow: none;
             border: 1px solid currentColor;
+            border-bottom: 2px solid currentColor;
         }
 
         /* 7K配色 */
@@ -130,12 +138,12 @@
             height: 10vh;
             background-color: currentColor;
             opacity: 0;
-            transition: opacity 0.05s ease-out;
+            transition: opacity 0.03s ease-out;
             z-index: 15;
         }
         .key-press.active { opacity: 0.5; }
 
-        /* 落下アニメーション用 */
+        /* 落下アニメーション */
         @keyframes fall {
             to { transform: translateY(120vh); }
         }
@@ -275,7 +283,7 @@
         }
         .gallery img:hover { 
             border-color: var(--accent-pink); transform: scale(1.02);
-            filter: grayscale(0%); box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2); z-index: 10; relative;
+            filter: grayscale(0%); box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2); z-index: 10; position: relative;
         }
 
         .status-closed {
@@ -285,11 +293,6 @@
         .status-closed::before {
             content: ''; width: 8px; height: 8px; background-color: #ff5555;
             border-radius: 50%; box-shadow: 0 0 10px #ff5555;
-        }
-
-        .footer {
-            text-align: center; margin-top: 80px; padding-top: 30px; border-top: 1px solid var(--card-border);
-            font-size: 0.9rem; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 16px;
         }
 
         @media (max-width: 768px) {
@@ -392,8 +395,15 @@
 <script>
     // --- osu!mania 譜面パース & アニメーションシーケンサー ---
     const lanes = document.querySelectorAll('.lane');
-    const noteSpeedMs = 2500; // 画面の一番上から落ち切るまでの時間
-    const hitTimeMs = noteSpeedMs * (100 / 120); // 判定ライン(約100vh位置)に到達する時間
+    
+    // ★ スクロールスピードの設定 (値を小さくすると速くなる)
+    // 120vh（画面の一番上から画面外まで）を落ち切るまでのミリ秒
+    const scrollDurationMs = 1200; 
+    const hitPositionVh = 100; // 判定ラインの位置 (100vh = 画面一番下)
+    const totalDistanceVh = 120; // アニメーションの総移動距離
+    
+    // ノーツが「spawnされてから判定ラインに到達するまで」の時間
+    const timeToHitMs = scrollDurationMs * (hitPositionVh / totalDistanceVh);
     
     let hitObjects = [];
     const loopStartTime = 325403; // 開始時間 (05:25:403)
@@ -403,7 +413,6 @@
     // .osuファイルをフェッチしてパース
     async function loadOsuMap() {
         try {
-            // index.htmlと同じ階層にある対象のosuファイル名
             const filename = "HyuN feat. Sennzai - Duplicity Shade (_underjoy) [Metamorphosis].osu";
             const res = await fetch(filename);
             if (!res.ok) throw new Error("File not found");
@@ -411,7 +420,6 @@
             
             parseOsu(text);
             
-            // 譜面データが取得できたらアニメーション開始
             if(hitObjects.length > 0) {
                 startPlayback();
             }
@@ -440,11 +448,11 @@
                     // 指定された時間範囲外はスキップ
                     if (time < loopStartTime || time > loopEndTime) continue;
                     
-                    // 7Kのレーン番号計算 (x座標 * 7 / 512)
+                    // 7Kのレーン番号計算
                     const lane = Math.floor((x * 7) / 512);
                     let endTime = time;
                     
-                    // 128のビットフラグが立っている場合はLN (Long Note)
+                    // LN判定
                     if ((type & 128) > 0) { 
                         const extras = parts[5].split(':');
                         endTime = parseInt(extras[0]);
@@ -459,11 +467,10 @@
                 }
             }
         }
-        // 万が一のため時間順にソート
         hitObjects.sort((a, b) => a.startTime - b.startTime);
     }
 
-    let playbackTime = -noteSpeedMs;
+    let playbackTime = -timeToHitMs; // 最初のノーツがちょうど落ちてくるようにマイナスからスタート
     let lastFrameTime = 0;
     let noteIndex = 0;
 
@@ -476,19 +483,19 @@
         let dt = now - lastFrameTime;
         lastFrameTime = now;
         
-        // 別タブに移動していた際の巨大なタイムジャンプを防ぐ
+        // タブ切り替え時の極端なタイムジャンプ防止
         if (dt > 100) dt = 16; 
         
         playbackTime += dt;
         
-        // 指定区間の終わりまで再生したらループ
+        // ループ処理
         if (playbackTime > loopDuration + 2000) {
-            playbackTime = -noteSpeedMs;
+            playbackTime = -timeToHitMs;
             noteIndex = 0;
         }
         
-        // 指定時間になったノーツをスポーン
-        while (noteIndex < hitObjects.length && hitObjects[noteIndex].startTime <= playbackTime + noteSpeedMs) {
+        // 判定時間(startTime)から落下にかかる時間(timeToHitMs)を引いたタイミングでスポーン
+        while (noteIndex < hitObjects.length && hitObjects[noteIndex].startTime <= playbackTime + timeToHitMs) {
             spawnNote(hitObjects[noteIndex]);
             noteIndex++;
         }
@@ -501,31 +508,30 @@
         if (!laneEl) return;
         
         const note = document.createElement('div');
-        
-        // CSSの @keyframes fall を割り当てて落下させる
-        note.style.animation = `fall ${noteSpeedMs}ms linear forwards`;
+        note.style.animation = `fall ${scrollDurationMs}ms linear forwards`;
         
         if (obj.isLN) {
             note.classList.add('note', 'long-note');
             const durationMs = obj.endTime - obj.startTime;
             
-            // LNの長さを計算 (落下スピードに合わせて高さを伸ばす)
-            // 2500ms(noteSpeedMs)で120vh進むため、その比率で長さを決定
-            const lengthVh = 120 * (durationMs / noteSpeedMs);
-            note.style.height = `calc(${lengthVh}vh + 35px)`;
+            // ★ LNの長さを正確に計算 (ノーツの厚み35pxを加算しないことで被りを防止)
+            const lengthVh = totalDistanceVh * (durationMs / scrollDurationMs);
+            
+            // 短すぎるLNでも最低限の厚みを確保
+            note.style.height = `max(30px, ${lengthVh}vh)`;
         } else {
             note.classList.add('note');
+            note.style.height = '30px';
         }
         
         laneEl.appendChild(note);
         
-        // 完全に通り過ぎたらDOMから要素を削除
-        const totalLifeTime = noteSpeedMs + (obj.endTime - obj.startTime);
+        const totalLifeTime = scrollDurationMs + (obj.endTime - obj.startTime);
         setTimeout(() => {
             if (note.parentNode) note.remove();
         }, totalLifeTime + 500);
         
-        // 判定ラインに到達した際の発光エフェクト
+        // 判定ライン到達時のエフェクト
         setTimeout(() => {
             const keyPress = laneEl.querySelector('.key-press');
             if (keyPress) {
@@ -535,10 +541,9 @@
                     keyPress.classList.remove('active');
                 }, holdTime);
             }
-        }, hitTimeMs);
+        }, timeToHitMs);
     }
 
-    // 処理開始
     loadOsuMap();
 </script>
 
