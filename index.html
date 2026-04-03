@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yukim- | osu! Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700&family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --card-bg: rgba(26, 26, 36, 0.6);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-pink: #ff79c6;
+            --accent-purple: #bd93f9;
+            --text-main: #f8f8f2;
+            --text-dim: #a1a1aa;
+            --border-radius: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Lexend', 'M PLUS Rounded 1c', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 背景のぼんやりとした光 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(189,147,249,0.15) 0%, transparent 70%);
+            z-index: -1;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(255,121,198,0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .container { 
+            max-width: 960px; 
+            margin: 0 auto; 
+            padding: 60px 20px; 
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Hero Section --- */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .banner-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .banner {
+            width: 100%;
+            display: block;
+            transition: var(--transition);
+        }
+
+        .banner-wrapper:hover .banner { 
+            transform: scale(1.03); 
+            filter: brightness(1.1);
+        }
+
+        .profile-title {
+            margin-top: 24px;
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin-top: 8px;
+        }
+
+        /* --- Sections --- */
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(189, 147, 249, 0.3);
+            box-shadow: 0 10px 30px rgba(189, 147, 249, 0.1);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        h2::before { 
+            content: ''; 
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: linear-gradient(to bottom, var(--accent-pink), var(--accent-purple));
+            border-radius: 4px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(189, 147, 249, 0.15);
+            color: var(--accent-purple);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            border: 1px solid rgba(189, 147, 249, 0.3);
+        }
+
+        a {
+            color: var(--accent-pink);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            color: var(--accent-purple);
+            text-shadow: 0 0 8px rgba(189, 147, 249, 0.4);
+        }
+
+        /* --- Goals / Progress --- */
+        .goals-list { list-style: none; }
+        .goals-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+        .goals-list li:last-child { border-bottom: none; padding-bottom: 0; }
+        .goals-list li:hover { padding-left: 8px; }
+        
+        .goals-list li.completed span:first-child::before {
+            content: '✓';
+            color: var(--accent-purple);
+            margin-right: 8px;
+            font-weight: bold;
+        }
+        .goals-list li.completed { color: var(--text-dim); }
+        .date { font-size: 0.85rem; color: var(--accent-purple); font-family: monospace; }
+
+        /* --- Collab Gallery (枚数均等・隙間なし版) --- */
+        .gallery {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .gallery-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1; /* 左右の列幅を均等（50%ずつ）にする */
+        }
+
+        .gallery img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            filter: grayscale(20%);
+        }
+        
+        .gallery img:hover { 
+            border-color: var(--accent-pink); 
+            transform: scale(1.02);
+            filter: grayscale(0%);
+            box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2);
+            position: relative;
+            z-index: 10; /* ホバー時に他の画像の上に表示 */
+        }
+
+        /* --- Status Indicator --- */
+        .status-closed {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ff5555;
+            font-weight: 700;
+            background: rgba(255, 85, 85, 0.1);
+            padding: 6px 16px;
+            border-radius: 8px;
+        }
+        .status-closed::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: #ff5555;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff5555;
+        }
+
+        /* --- Footer / Secret --- */
+        .footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .secret-box {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            cursor: help;
+            border: 1px dashed var(--card-border);
+            transition: var(--transition);
+        }
+        .secret-box:hover {
+            border-color: var(--text-dim);
+            color: var(--text-main);
+        }
+
+        /* --- スマホ向けの調整 --- */
+        @media (max-width: 768px) {
+            .container { padding: 40px 16px; }
+            .profile-title { font-size: 2.2rem; }
+            .gallery { 
+                flex-direction: column; /* スマホでは縦1列にする */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <a href="https://osekai.net/profiles?user=34771499" target="_blank" class="banner-wrapper">
+            <img src="https://osekai.net/profiles/img/banner.svg?id=34771499" alt="Yukim- Banner" class="banner">
+        </a>
+        <h1 class="profile-title">Yukim-</h1>
+        <p class="subtitle">4k x 7k x Taiko Player | Based in Japan</p>
+    </header>
+
+    <div class="section-grid">
+        <div class="card">
+            <h2>About Me</h2>
+            <div><span class="badge">Former: Rhodes</span></div>
+            <p>I am a Japanese osu!mania and Taiko enthusiast. Joined the <strong>[TCD] Clan</strong> on January 18th, 2025. Always looking for mutuals—feel free to PM me anytime!</p>
+            <div style="margin-top: auto; padding-top: 20px;">
+                <p><strong>Bro:</strong> <a href="https://osu.ppy.sh/users/35356189">tdgwapmj</a></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>The [TCD] Clan</h2>
+            <p>A Vietnamese-founded mania clan that welcomes players from all over the world.</p>
+            <p style="margin-top: auto; padding-top: 20px; font-size: 0.95rem; color: var(--text-dim);">
+                Interested in joining? Check out <a href="https://osu.ppy.sh/users/29645291">tihung's</a> profile for details.
+            </p>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+        <h2>My Journey & Goals</h2>
+        <ul class="goals-list">
+            <li class="completed"><span>7,000pp reached</span> <span class="date">2024.08.15</span></li>
+            <li class="completed"><span>Global Top 10,000</span> <span class="date">2024.08.23</span></li>
+            <li class="completed"><span>8,000pp reached</span> <span class="date">2024.11.12</span></li>
+            <li class="completed"><span>9,000pp reached</span> <span class="date">2026.01.12</span></li>
+            <li><span>Upload 1 Ranked Beatmap</span> <span class="date" style="color: var(--text-dim)">In Progress</span></li>
+        </ul>
+    </div>
+
+    <div class="section-grid">
+        <div class="card">
+            <h2>Modding & Guest Diff</h2>
+            <div><span class="status-closed">CLOSED</span></div>
+            <p style="font-size: 0.95rem; margin-top: 16px; color: var(--text-dim);">
+                Accepting up to 5 requests when open.<br>
+                Max difficulty: 5★.<br>
+                Active 4:00 PM - 12:00 PM (JST).
+            </p>
+        </div>
+        <div class="card">
+            <h2>Gifts & Support</h2>
+            <p style="margin-bottom: 12px;">Special thanks to:</p>
+            <ul style="list-style: none; font-size: 0.95rem; display: flex; flex-direction: column; gap: 8px;">
+                <li><span style="color: var(--accent-pink);">❤</span> <strong>_MLB__0</strong> <span style="color: var(--text-dim);">(5 Months!)</span></li>
+                <li><span style="color: var(--accent-pink);">❤</span> <strong>CatFR</strong> <span style="color: var(--text-dim);">(4 Months! God.)</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+        <h2>Collaborations Archive</h2>
+<div class="gallery">
+            <div class="gallery-col">
+                <img src="https://i.ibb.co/HgxK8Nd/106775838-p0.jpg" alt="Artwork 1" loading="lazy">
+                <img src="https://i.ibb.co/1GwmjqRK/IMG-0006.jpg" alt="IMG 0006" loading="lazy">
+                <img src="https://i.ibb.co/92hBZmQ/94444612-p0-2.jpg" alt="Artwork 2" loading="lazy">
+            </div>
+            
+            <div class="gallery-col">
+                <img src="https://i.ibb.co/nq1KQ5tL/Collab-server.png" alt="Collab Server" loading="lazy">
+                <img src="https://i.ibb.co/NgSbxr7m/IMG-0003.png" alt="IMG 0003" loading="lazy">
+                <img src="https://i.ibb.co/392yv2yf/collab.png" alt="Collab 2" loading="lazy">
+                <img src="https://i.ibb.co/mvN8zzC/collabmaboi.png" alt="Collab Ma Boi" loading="lazy">
+            </div>
+        </div>
+
+    <footer class="footer">
+        <div class="secret-box" title="Base64 Message">
+            VGhlcmUgaXMgbm90aGluZy4=
+        </div>
+        <img src="https://iwf.gay/iwf21.gif" alt="icon" style="height: 30px; opacity: 0.4; border-radius: 4px;">
+        <p>&copy; 2026 Yukim- | Designed for the rhythm</p>
+    </footer>
+</div>
+
+</body>
+</html>
