@@ -31,7 +31,7 @@
             position: relative;
         }
 
-        /* 背景のぼんやりとした光 */
+        /* --- 背景のぼんやりとした光 --- */
         body::before {
             content: '';
             position: fixed;
@@ -53,6 +53,94 @@
             z-index: -1;
         }
 
+        /* --- 鍵盤プレイアニメーション (osu!mania 7K - 譜面連動版) --- */
+        .mania-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+        .lane {
+            width: 70px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        /* 中央(スペース)レーン */
+        .lane:nth-child(4) {
+            background: rgba(255, 121, 198, 0.02);
+            border-left: 1px solid rgba(255, 121, 198, 0.1);
+            border-right: 1px solid rgba(255, 121, 198, 0.1);
+        }
+
+        /* 判定ライン */
+        .lane::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10vh;
+            background: linear-gradient(to top, rgba(255,255,255,0.1), transparent);
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+
+        /* --- ノーツのスタイル --- */
+        .note {
+            position: absolute;
+            width: 100%;
+            height: 35px;
+            border-radius: 4px;
+            bottom: 100%;
+            box-shadow: 0 0 10px currentColor;
+            background-color: currentColor;
+            z-index: 5;
+        }
+
+        /* ロングノーツ (LN) */
+        .note.long-note {
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
+            box-shadow: none;
+            border: 1px solid currentColor;
+        }
+
+        /* 7K配色 */
+        .lane:nth-child(1), .lane:nth-child(3), .lane:nth-child(5), .lane:nth-child(7) { color: var(--text-main); }
+        .lane:nth-child(2), .lane:nth-child(6) { color: var(--accent-purple); }
+        .lane:nth-child(4) { color: var(--accent-pink); }
+
+        /* キー押しエフェクト */
+        .key-press {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10vh;
+            background-color: currentColor;
+            opacity: 0;
+            transition: opacity 0.05s ease-out;
+            z-index: 15;
+        }
+        .key-press.active { opacity: 0.5; }
+
+        /* 落下アニメーション用 */
+        @keyframes fall {
+            to { transform: translateY(120vh); }
+        }
+
+        /* --- メインコンテンツ --- */
         .container { 
             max-width: 960px; 
             margin: 0 auto; 
@@ -65,11 +153,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Hero Section --- */
-        header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
+        header { text-align: center; margin-bottom: 60px; }
 
         .banner-wrapper {
             position: relative;
@@ -80,16 +164,8 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .banner {
-            width: 100%;
-            display: block;
-            transition: var(--transition);
-        }
-
-        .banner-wrapper:hover .banner { 
-            transform: scale(1.03); 
-            filter: brightness(1.1);
-        }
+        .banner { width: 100%; display: block; transition: var(--transition); }
+        .banner-wrapper:hover .banner { transform: scale(1.03); filter: brightness(1.1); }
 
         .profile-title {
             margin-top: 24px;
@@ -108,7 +184,6 @@
             margin-top: 8px;
         }
 
-        /* --- Sections --- */
         .section-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -167,18 +242,9 @@
             border: 1px solid rgba(189, 147, 249, 0.3);
         }
 
-        a {
-            color: var(--accent-pink);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-        
-        a:hover {
-            color: var(--accent-purple);
-            text-shadow: 0 0 8px rgba(189, 147, 249, 0.4);
-        }
+        a { color: var(--accent-pink); text-decoration: none; transition: var(--transition); }
+        a:hover { color: var(--accent-purple); text-shadow: 0 0 8px rgba(189, 147, 249, 0.4); }
 
-        /* --- Goals / Progress --- */
         .goals-list { list-style: none; }
         .goals-list li {
             padding: 12px 0;
@@ -200,99 +266,50 @@
         .goals-list li.completed { color: var(--text-dim); }
         .date { font-size: 0.85rem; color: var(--accent-purple); font-family: monospace; }
 
-        /* --- Collab Gallery (枚数均等・隙間なし版) --- */
-        .gallery {
-            display: flex;
-            gap: 16px;
-        }
-        
-        .gallery-col {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            flex: 1; /* 左右の列幅を均等（50%ずつ）にする */
-        }
-
+        .gallery { display: flex; gap: 16px; }
+        .gallery-col { display: flex; flex-direction: column; gap: 16px; flex: 1; }
         .gallery img {
-            width: 100%;
-            height: auto;
-            border-radius: 12px;
-            display: block;
-            border: 2px solid transparent;
-            transition: var(--transition);
-            cursor: pointer;
-            filter: grayscale(20%);
+            width: 100%; height: auto; border-radius: 12px; display: block;
+            border: 2px solid transparent; transition: var(--transition);
+            cursor: pointer; filter: grayscale(20%);
         }
-        
         .gallery img:hover { 
-            border-color: var(--accent-pink); 
-            transform: scale(1.02);
-            filter: grayscale(0%);
-            box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2);
-            position: relative;
-            z-index: 10; /* ホバー時に他の画像の上に表示 */
+            border-color: var(--accent-pink); transform: scale(1.02);
+            filter: grayscale(0%); box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2); z-index: 10; relative;
         }
 
-        /* --- Status Indicator --- */
         .status-closed {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #ff5555;
-            font-weight: 700;
-            background: rgba(255, 85, 85, 0.1);
-            padding: 6px 16px;
-            border-radius: 8px;
+            display: inline-flex; align-items: center; gap: 8px; color: #ff5555;
+            font-weight: 700; background: rgba(255, 85, 85, 0.1); padding: 6px 16px; border-radius: 8px;
         }
         .status-closed::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background-color: #ff5555;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #ff5555;
+            content: ''; width: 8px; height: 8px; background-color: #ff5555;
+            border-radius: 50%; box-shadow: 0 0 10px #ff5555;
         }
 
-        /* --- Footer / Secret --- */
         .footer {
-            text-align: center;
-            margin-top: 80px;
-            padding-top: 30px;
-            border-top: 1px solid var(--card-border);
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
+            text-align: center; margin-top: 80px; padding-top: 30px; border-top: 1px solid var(--card-border);
+            font-size: 0.9rem; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 16px;
         }
 
-        .secret-box {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.75rem;
-            cursor: help;
-            border: 1px dashed var(--card-border);
-            transition: var(--transition);
-        }
-        .secret-box:hover {
-            border-color: var(--text-dim);
-            color: var(--text-main);
-        }
-
-        /* --- スマホ向けの調整 --- */
         @media (max-width: 768px) {
             .container { padding: 40px 16px; }
             .profile-title { font-size: 2.2rem; }
-            .gallery { 
-                flex-direction: column; /* スマホでは縦1列にする */
-            }
+            .gallery { flex-direction: column; }
         }
     </style>
 </head>
 <body>
+
+<div class="mania-bg" id="maniaBg">
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+    <div class="lane"><div class="key-press"></div></div>
+</div>
 
 <div class="container">
     <header>
@@ -355,7 +372,7 @@
 
     <div class="card" style="margin-top: 24px;">
         <h2>Collaborations Archive</h2>
-<div class="gallery">
+        <div class="gallery">
             <div class="gallery-col">
                 <img src="https://i.ibb.co/HgxK8Nd/106775838-p0.jpg" alt="Artwork 1" loading="lazy">
                 <img src="https://i.ibb.co/1GwmjqRK/IMG-0006.jpg" alt="IMG 0006" loading="lazy">
@@ -369,6 +386,161 @@
                 <img src="https://i.ibb.co/mvN8zzC/collabmaboi.png" alt="Collab Ma Boi" loading="lazy">
             </div>
         </div>
+    </div>
+</div>
+
+<script>
+    // --- osu!mania 譜面パース & アニメーションシーケンサー ---
+    const lanes = document.querySelectorAll('.lane');
+    const noteSpeedMs = 2500; // 画面の一番上から落ち切るまでの時間
+    const hitTimeMs = noteSpeedMs * (100 / 120); // 判定ライン(約100vh位置)に到達する時間
+    
+    let hitObjects = [];
+    const loopStartTime = 325403; // 開始時間 (05:25:403)
+    const loopEndTime = 408881;   // 終了時間 (06:48:881)
+    const loopDuration = loopEndTime - loopStartTime;
+    
+    // .osuファイルをフェッチしてパース
+    async function loadOsuMap() {
+        try {
+            // index.htmlと同じ階層にある対象のosuファイル名
+            const filename = "HyuN feat. Sennzai - Duplicity Shade (_underjoy) [Metamorphosis].osu";
+            const res = await fetch(filename);
+            if (!res.ok) throw new Error("File not found");
+            const text = await res.text();
+            
+            parseOsu(text);
+            
+            // 譜面データが取得できたらアニメーション開始
+            if(hitObjects.length > 0) {
+                startPlayback();
+            }
+        } catch (e) {
+            console.error("osuファイルの読み込みに失敗しました:", e);
+        }
+    }
+
+    function parseOsu(text) {
+        const lines = text.split('\n');
+        let inHitObjects = false;
+        
+        for (let line of lines) {
+            line = line.trim();
+            if (line === '[HitObjects]') {
+                inHitObjects = true;
+                continue;
+            }
+            if (inHitObjects && line) {
+                const parts = line.split(',');
+                if (parts.length >= 5) {
+                    const x = parseInt(parts[0]);
+                    const time = parseInt(parts[2]);
+                    const type = parseInt(parts[3]);
+                    
+                    // 指定された時間範囲外はスキップ
+                    if (time < loopStartTime || time > loopEndTime) continue;
+                    
+                    // 7Kのレーン番号計算 (x座標 * 7 / 512)
+                    const lane = Math.floor((x * 7) / 512);
+                    let endTime = time;
+                    
+                    // 128のビットフラグが立っている場合はLN (Long Note)
+                    if ((type & 128) > 0) { 
+                        const extras = parts[5].split(':');
+                        endTime = parseInt(extras[0]);
+                    }
+                    
+                    hitObjects.push({
+                        lane: lane,
+                        startTime: time - loopStartTime,
+                        endTime: endTime - loopStartTime,
+                        isLN: (type & 128) > 0
+                    });
+                }
+            }
+        }
+        // 万が一のため時間順にソート
+        hitObjects.sort((a, b) => a.startTime - b.startTime);
+    }
+
+    let playbackTime = -noteSpeedMs;
+    let lastFrameTime = 0;
+    let noteIndex = 0;
+
+    function startPlayback() {
+        lastFrameTime = performance.now();
+        requestAnimationFrame(update);
+    }
+
+    function update(now) {
+        let dt = now - lastFrameTime;
+        lastFrameTime = now;
+        
+        // 別タブに移動していた際の巨大なタイムジャンプを防ぐ
+        if (dt > 100) dt = 16; 
+        
+        playbackTime += dt;
+        
+        // 指定区間の終わりまで再生したらループ
+        if (playbackTime > loopDuration + 2000) {
+            playbackTime = -noteSpeedMs;
+            noteIndex = 0;
+        }
+        
+        // 指定時間になったノーツをスポーン
+        while (noteIndex < hitObjects.length && hitObjects[noteIndex].startTime <= playbackTime + noteSpeedMs) {
+            spawnNote(hitObjects[noteIndex]);
+            noteIndex++;
+        }
+        
+        requestAnimationFrame(update);
+    }
+
+    function spawnNote(obj) {
+        const laneEl = lanes[obj.lane];
+        if (!laneEl) return;
+        
+        const note = document.createElement('div');
+        
+        // CSSの @keyframes fall を割り当てて落下させる
+        note.style.animation = `fall ${noteSpeedMs}ms linear forwards`;
+        
+        if (obj.isLN) {
+            note.classList.add('note', 'long-note');
+            const durationMs = obj.endTime - obj.startTime;
+            
+            // LNの長さを計算 (落下スピードに合わせて高さを伸ばす)
+            // 2500ms(noteSpeedMs)で120vh進むため、その比率で長さを決定
+            const lengthVh = 120 * (durationMs / noteSpeedMs);
+            note.style.height = `calc(${lengthVh}vh + 35px)`;
+        } else {
+            note.classList.add('note');
+        }
+        
+        laneEl.appendChild(note);
+        
+        // 完全に通り過ぎたらDOMから要素を削除
+        const totalLifeTime = noteSpeedMs + (obj.endTime - obj.startTime);
+        setTimeout(() => {
+            if (note.parentNode) note.remove();
+        }, totalLifeTime + 500);
+        
+        // 判定ラインに到達した際の発光エフェクト
+        setTimeout(() => {
+            const keyPress = laneEl.querySelector('.key-press');
+            if (keyPress) {
+                keyPress.classList.add('active');
+                const holdTime = obj.isLN ? (obj.endTime - obj.startTime) : 100;
+                setTimeout(() => {
+                    keyPress.classList.remove('active');
+                }, holdTime);
+            }
+        }, hitTimeMs);
+    }
+
+    // 処理開始
+    loadOsuMap();
+</script>
 
 </body>
 </html>
