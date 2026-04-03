@@ -68,7 +68,7 @@
             pointer-events: none;
         }
         .lane {
-            width: 90px; /* ★ レーンの幅を広くしました */
+            width: 90px;
             height: 100%;
             background: rgba(255, 255, 255, 0.02);
             border-left: 1px solid rgba(255, 255, 255, 0.05);
@@ -83,7 +83,6 @@
             border-right: 1px solid rgba(255, 121, 198, 0.1);
         }
 
-        /* スマホ向けにレーン幅を画面に収める */
         @media (max-width: 768px) {
             .lane { width: 13vw; }
         }
@@ -105,9 +104,9 @@
         .note {
             position: absolute;
             width: 100%;
-            height: 30px; /* ショートノーツの厚みを少しシャープに */
+            height: 30px;
             border-radius: 4px;
-            bottom: 100%; /* レーンのトップから降ってくる */
+            bottom: 100%;
             box-shadow: 0 0 10px currentColor;
             background-color: currentColor;
             z-index: 5;
@@ -116,7 +115,6 @@
 
         /* ロングノーツ (LN) */
         .note.long-note {
-            /* 頭の30pxだけ濃く、残りの胴体を半透明にするマスク */
             -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
             mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
             box-shadow: none;
@@ -143,7 +141,6 @@
         }
         .key-press.active { opacity: 0.5; }
 
-        /* 落下アニメーション */
         @keyframes fall {
             to { transform: translateY(120vh); }
         }
@@ -393,24 +390,25 @@
 </div>
 
 <script>
-    // --- osu!mania 譜面パース & アニメーションシーケンサー ---
     const lanes = document.querySelectorAll('.lane');
     
-    // ★ スクロールスピードの設定 (値を小さくすると速くなる)
-    // 120vh（画面の一番上から画面外まで）を落ち切るまでのミリ秒
+    // スクロールスピードの設定
     const scrollDurationMs = 1200; 
-    const hitPositionVh = 100; // 判定ラインの位置 (100vh = 画面一番下)
-    const totalDistanceVh = 120; // アニメーションの総移動距離
-    
-    // ノーツが「spawnされてから判定ラインに到達するまで」の時間
+    const hitPositionVh = 100;
+    const totalDistanceVh = 120;
     const timeToHitMs = scrollDurationMs * (hitPositionVh / totalDistanceVh);
     
     let hitObjects = [];
-    const loopStartTime = 325403; // 開始時間 (05:25:403)
-    const loopEndTime = 408881;   // 終了時間 (06:48:881)
-    const loopDuration = loopEndTime - loopStartTime;
+    let lastNoteEndTime = 0; // 指定範囲内で一番最後のノーツが判定ラインに到達する時間
     
-    // .osuファイルをフェッチしてパース
+    // 曲のBPM (Duplicity Shade: 220)
+    const bpm = 220;
+    // 1/4拍（約68.18ミリ秒）
+    const quarterBeatMs = (60000 / bpm) / 4; 
+
+    const loopStartTime = 325403;
+    const loopEndTime = 408881;
+    
     async function loadOsuMap() {
         try {
             const filename = "HyuN feat. Sennzai - Duplicity Shade (_underjoy) [Metamorphosis].osu";
@@ -445,14 +443,11 @@
                     const time = parseInt(parts[2]);
                     const type = parseInt(parts[3]);
                     
-                    // 指定された時間範囲外はスキップ
                     if (time < loopStartTime || time > loopEndTime) continue;
                     
-                    // 7Kのレーン番号計算
                     const lane = Math.floor((x * 7) / 512);
                     let endTime = time;
                     
-                    // LN判定
                     if ((type & 128) > 0) { 
                         const extras = parts[5].split(':');
                         endTime = parseInt(extras[0]);
@@ -467,10 +462,22 @@
                 }
             }
         }
+        
         hitObjects.sort((a, b) => a.startTime - b.startTime);
+
+        // 一番最後のノーツ（またはLNの終点）の時間を探す
+        if (hitObjects.length > 0) {
+            let maxEndTime = 0;
+            hitObjects.forEach(obj => {
+                if (obj.endTime > maxEndTime) {
+                    maxEndTime = obj.endTime;
+                }
+            });
+            lastNoteEndTime = maxEndTime;
+        }
     }
 
-    let playbackTime = -timeToHitMs; // 最初のノーツがちょうど落ちてくるようにマイナスからスタート
+    let playbackTime = -timeToHitMs;
     let lastFrameTime = 0;
     let noteIndex = 0;
 
@@ -483,18 +490,15 @@
         let dt = now - lastFrameTime;
         lastFrameTime = now;
         
-        // タブ切り替え時の極端なタイムジャンプ防止
         if (dt > 100) dt = 16; 
-        
         playbackTime += dt;
         
-        // ループ処理
-        if (playbackTime > loopDuration + 2000) {
-            playbackTime = -timeToHitMs;
+        // ★ 最後のノーツが判定ラインに到達して「1/4拍後」に最初に戻る
+        if (playbackTime > lastNoteEndTime + quarterBeatMs) {
+            playbackTime = -timeToHitMs; // ループの最初（画面外）へリセット
             noteIndex = 0;
         }
         
-        // 判定時間(startTime)から落下にかかる時間(timeToHitMs)を引いたタイミングでスポーン
         while (noteIndex < hitObjects.length && hitObjects[noteIndex].startTime <= playbackTime + timeToHitMs) {
             spawnNote(hitObjects[noteIndex]);
             noteIndex++;
@@ -513,11 +517,7 @@
         if (obj.isLN) {
             note.classList.add('note', 'long-note');
             const durationMs = obj.endTime - obj.startTime;
-            
-            // ★ LNの長さを正確に計算 (ノーツの厚み35pxを加算しないことで被りを防止)
             const lengthVh = totalDistanceVh * (durationMs / scrollDurationMs);
-            
-            // 短すぎるLNでも最低限の厚みを確保
             note.style.height = `max(30px, ${lengthVh}vh)`;
         } else {
             note.classList.add('note');
@@ -531,7 +531,6 @@
             if (note.parentNode) note.remove();
         }, totalLifeTime + 500);
         
-        // 判定ライン到達時のエフェクト
         setTimeout(() => {
             const keyPress = laneEl.querySelector('.key-press');
             if (keyPress) {
