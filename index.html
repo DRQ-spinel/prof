@@ -53,7 +53,7 @@
             z-index: -1;
         }
 
-        /* --- 鍵盤プレイアニメーション (osu!mania 7K - 譜面連動版) --- */
+        /* --- 鍵盤プレイアニメーション (osu!mania 7K - JS制御版) --- */
         .mania-bg {
             position: fixed;
             top: 0;
@@ -64,11 +64,11 @@
             display: flex;
             justify-content: center;
             gap: 2px;
-            opacity: 0.15;
+            opacity: 0.15; /* 背景として目立ちすぎないように薄く */
             pointer-events: none;
         }
         .lane {
-            width: 90px;
+            width: 70px; /* 横幅を大きく調整 */
             height: 100%;
             background: rgba(255, 255, 255, 0.02);
             border-left: 1px solid rgba(255, 255, 255, 0.05);
@@ -76,15 +76,11 @@
             position: relative;
             overflow: hidden;
         }
-        /* 中央(スペース)レーン */
+        /* 中央(スペース)のレーンは少し目立たせる */
         .lane:nth-child(4) {
             background: rgba(255, 121, 198, 0.02);
             border-left: 1px solid rgba(255, 121, 198, 0.1);
             border-right: 1px solid rgba(255, 121, 198, 0.1);
-        }
-
-        @media (max-width: 768px) {
-            .lane { width: 13vw; }
         }
 
         /* 判定ライン */
@@ -104,30 +100,30 @@
         .note {
             position: absolute;
             width: 100%;
-            height: 30px;
+            height: 35px; /* ショートノーツの高さ */
             border-radius: 4px;
-            bottom: 100%;
+            bottom: 100%; /* 画面外の上端からスタート */
+            animation: fall 2.5s linear forwards; /* すべて同じスピード */
             box-shadow: 0 0 10px currentColor;
             background-color: currentColor;
             z-index: 5;
-            will-change: transform;
         }
 
-        /* ロングノーツ (LN) */
+        /* ロングノーツ (LN) のスタイル */
         .note.long-note {
-            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
-            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 30px, rgba(0,0,0,0.4) 30px, rgba(0,0,0,0.4) 100%);
-            box-shadow: none;
+            /* 胴体を半透明にし、頭部分(下側)を濃くするマスク処理 */
+            -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 0px, rgba(0,0,0,1) 35px, rgba(0,0,0,0.4) 35px, rgba(0,0,0,0.4) 100%);
+            box-shadow: none; /* LNは胴体が長いためシャドウを消す */
             border: 1px solid currentColor;
-            border-bottom: 2px solid currentColor;
         }
 
-        /* 7K配色 */
+        /* レーンごとの色設定 */
         .lane:nth-child(1), .lane:nth-child(3), .lane:nth-child(5), .lane:nth-child(7) { color: var(--text-main); }
         .lane:nth-child(2), .lane:nth-child(6) { color: var(--accent-purple); }
         .lane:nth-child(4) { color: var(--accent-pink); }
 
-        /* キー押しエフェクト */
+        /* キーを押したときのエフェクト（JSでopacityを操作） */
         .key-press {
             position: absolute;
             bottom: 0;
@@ -136,13 +132,13 @@
             height: 10vh;
             background-color: currentColor;
             opacity: 0;
-            transition: opacity 0.03s ease-out;
+            transition: opacity 0.05s ease-out;
             z-index: 15;
         }
         .key-press.active { opacity: 0.5; }
 
         @keyframes fall {
-            to { transform: translateY(120vh); }
+            to { transform: translateY(120vh); } /* 下の画面外まで落とす */
         }
 
         /* --- メインコンテンツ --- */
@@ -158,6 +154,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* --- Hero Section --- */
         header { text-align: center; margin-bottom: 60px; }
 
         .banner-wrapper {
@@ -169,8 +166,16 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .banner { width: 100%; display: block; transition: var(--transition); }
-        .banner-wrapper:hover .banner { transform: scale(1.03); filter: brightness(1.1); }
+        .banner {
+            width: 100%;
+            display: block;
+            transition: var(--transition);
+        }
+
+        .banner-wrapper:hover .banner { 
+            transform: scale(1.03); 
+            filter: brightness(1.1);
+        }
 
         .profile-title {
             margin-top: 24px;
@@ -189,6 +194,7 @@
             margin-top: 8px;
         }
 
+        /* --- Sections --- */
         .section-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -247,9 +253,18 @@
             border: 1px solid rgba(189, 147, 249, 0.3);
         }
 
-        a { color: var(--accent-pink); text-decoration: none; transition: var(--transition); }
-        a:hover { color: var(--accent-purple); text-shadow: 0 0 8px rgba(189, 147, 249, 0.4); }
+        a {
+            color: var(--accent-pink);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        a:hover {
+            color: var(--accent-purple);
+            text-shadow: 0 0 8px rgba(189, 147, 249, 0.4);
+        }
 
+        /* --- Goals / Progress --- */
         .goals-list { list-style: none; }
         .goals-list li {
             padding: 12px 0;
@@ -271,27 +286,71 @@
         .goals-list li.completed { color: var(--text-dim); }
         .date { font-size: 0.85rem; color: var(--accent-purple); font-family: monospace; }
 
+        /* --- Collab Gallery --- */
         .gallery { display: flex; gap: 16px; }
-        .gallery-col { display: flex; flex-direction: column; gap: 16px; flex: 1; }
-        .gallery img {
-            width: 100%; height: auto; border-radius: 12px; display: block;
-            border: 2px solid transparent; transition: var(--transition);
-            cursor: pointer; filter: grayscale(20%);
-        }
-        .gallery img:hover { 
-            border-color: var(--accent-pink); transform: scale(1.02);
-            filter: grayscale(0%); box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2); z-index: 10; position: relative;
+        
+        .gallery-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1; 
         }
 
+        .gallery img {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            cursor: pointer;
+            filter: grayscale(20%);
+        }
+        
+        .gallery img:hover { 
+            border-color: var(--accent-pink); 
+            transform: scale(1.02);
+            filter: grayscale(0%);
+            box-shadow: 0 8px 24px rgba(255, 121, 198, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Status Indicator --- */
         .status-closed {
-            display: inline-flex; align-items: center; gap: 8px; color: #ff5555;
-            font-weight: 700; background: rgba(255, 85, 85, 0.1); padding: 6px 16px; border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #ff5555;
+            font-weight: 700;
+            background: rgba(255, 85, 85, 0.1);
+            padding: 6px 16px;
+            border-radius: 8px;
         }
         .status-closed::before {
-            content: ''; width: 8px; height: 8px; background-color: #ff5555;
-            border-radius: 50%; box-shadow: 0 0 10px #ff5555;
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: #ff5555;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff5555;
         }
 
+        /* --- Footer / Secret --- */
+        .footer {
+            text-align: center;
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* --- スマホ向けの調整 --- */
         @media (max-width: 768px) {
             .container { padding: 40px 16px; }
             .profile-title { font-size: 2.2rem; }
@@ -390,160 +449,76 @@
 </div>
 
 <script>
+    // --- osu!mania Background Sequencer (High Speed & High Density) ---
     const lanes = document.querySelectorAll('.lane');
     
-    // スクロールスピードの設定
-    const scrollDurationMs = 1200; 
-    const hitPositionVh = 100;
-    const totalDistanceVh = 120;
-    const timeToHitMs = scrollDurationMs * (hitPositionVh / totalDistanceVh);
+    // 1. スクロールスピードの調整
+    // 数値を小さくするほど落下が速くなります（元: 2500 -> 変更後: 1000）
+    const noteSpeedMs = 1000; 
+    const hitTimeMs = noteSpeedMs * (100 / 120); 
     
-    let hitObjects = [];
-    let lastNoteEndTime = 0; // 指定範囲内で一番最後のノーツが判定ラインに到達する時間
-    
-    // 曲のBPM (Duplicity Shade: 220)
-    const bpm = 220;
-    // 1/4拍（約68.18ミリ秒）
-    const quarterBeatMs = (60000 / bpm) / 4; 
+    const laneBlockedUntil = new Array(7).fill(0);
 
-    const loopStartTime = 325403;
-    const loopEndTime = 408881;
-    
-    async function loadOsuMap() {
-        try {
-            const filename = "HyuN feat. Sennzai - Duplicity Shade (_underjoy) [Metamorphosis].osu";
-            const res = await fetch(filename);
-            if (!res.ok) throw new Error("File not found");
-            const text = await res.text();
+    // 2. ノーツ生成の判定間隔を短くする（元: 150 -> 変更後: 70）
+    setInterval(() => {
+        const now = Date.now();
+        
+        // 3. 和音（同時押し）の確率と最大数を増やす
+        // 20%の確率で3つ同時、40%の確率で2つ同時、残りは1つ
+        let maxNotesToSpawn = 1;
+        const rand = Math.random();
+        if (rand > 0.8) maxNotesToSpawn = 3;
+        else if (rand > 0.4) maxNotesToSpawn = 2;
+
+        for(let i = 0; i < maxNotesToSpawn; i++) {
+            const laneIdx = Math.floor(Math.random() * 7);
             
-            parseOsu(text);
+            if (now < laneBlockedUntil[laneIdx]) continue;
+
+            const lane = lanes[laneIdx];
+            const note = document.createElement('div');
             
-            if(hitObjects.length > 0) {
-                startPlayback();
-            }
-        } catch (e) {
-            console.error("osuファイルの読み込みに失敗しました:", e);
-        }
-    }
+            const isLN = Math.random() < 0.2;
+            let noteLengthPx = 35;
+            
+            // 4. ノーツ間の最低限の隙間を詰める（元: 250 -> 変更後: 90）
+            let blockDuration = 90; 
 
-    function parseOsu(text) {
-        const lines = text.split('\n');
-        let inHitObjects = false;
-        
-        for (let line of lines) {
-            line = line.trim();
-            if (line === '[HitObjects]') {
-                inHitObjects = true;
-                continue;
+            if (isLN) {
+                note.classList.add('note', 'long-note');
+                noteLengthPx = Math.floor(Math.random() * 250) + 150;
+                note.style.height = `${noteLengthPx}px`;
+                
+                const screenHeight = window.innerHeight || 800;
+                // LN時のバッファも短縮
+                blockDuration = (noteLengthPx / screenHeight) * noteSpeedMs + 50; 
+            } else {
+                note.classList.add('note');
             }
-            if (inHitObjects && line) {
-                const parts = line.split(',');
-                if (parts.length >= 5) {
-                    const x = parseInt(parts[0]);
-                    const time = parseInt(parts[2]);
-                    const type = parseInt(parts[3]);
+
+            // 5. CSSに固定されていた落下スピードをJSから上書きして適用する
+            note.style.animationDuration = `${noteSpeedMs}ms`;
+
+            laneBlockedUntil[laneIdx] = now + blockDuration;
+            lane.appendChild(note);
+
+            setTimeout(() => {
+                if (note.parentNode) note.remove();
+            }, noteSpeedMs + 200);
+
+            setTimeout(() => {
+                const keyPress = lane.querySelector('.key-press');
+                if (keyPress) {
+                    keyPress.classList.add('active');
                     
-                    if (time < loopStartTime || time > loopEndTime) continue;
-                    
-                    const lane = Math.floor((x * 7) / 512);
-                    let endTime = time;
-                    
-                    if ((type & 128) > 0) { 
-                        const extras = parts[5].split(':');
-                        endTime = parseInt(extras[0]);
-                    }
-                    
-                    hitObjects.push({
-                        lane: lane,
-                        startTime: time - loopStartTime,
-                        endTime: endTime - loopStartTime,
-                        isLN: (type & 128) > 0
-                    });
+                    const holdTime = isLN ? blockDuration - 50 : 80;
+                    setTimeout(() => {
+                        keyPress.classList.remove('active');
+                    }, holdTime);
                 }
-            }
+            }, hitTimeMs);
         }
-        
-        hitObjects.sort((a, b) => a.startTime - b.startTime);
-
-        // 一番最後のノーツ（またはLNの終点）の時間を探す
-        if (hitObjects.length > 0) {
-            let maxEndTime = 0;
-            hitObjects.forEach(obj => {
-                if (obj.endTime > maxEndTime) {
-                    maxEndTime = obj.endTime;
-                }
-            });
-            lastNoteEndTime = maxEndTime;
-        }
-    }
-
-    let playbackTime = -timeToHitMs;
-    let lastFrameTime = 0;
-    let noteIndex = 0;
-
-    function startPlayback() {
-        lastFrameTime = performance.now();
-        requestAnimationFrame(update);
-    }
-
-    function update(now) {
-        let dt = now - lastFrameTime;
-        lastFrameTime = now;
-        
-        if (dt > 100) dt = 16; 
-        playbackTime += dt;
-        
-        // ★ 最後のノーツが判定ラインに到達して「1/4拍後」に最初に戻る
-        if (playbackTime > lastNoteEndTime + quarterBeatMs) {
-            playbackTime = -timeToHitMs; // ループの最初（画面外）へリセット
-            noteIndex = 0;
-        }
-        
-        while (noteIndex < hitObjects.length && hitObjects[noteIndex].startTime <= playbackTime + timeToHitMs) {
-            spawnNote(hitObjects[noteIndex]);
-            noteIndex++;
-        }
-        
-        requestAnimationFrame(update);
-    }
-
-    function spawnNote(obj) {
-        const laneEl = lanes[obj.lane];
-        if (!laneEl) return;
-        
-        const note = document.createElement('div');
-        note.style.animation = `fall ${scrollDurationMs}ms linear forwards`;
-        
-        if (obj.isLN) {
-            note.classList.add('note', 'long-note');
-            const durationMs = obj.endTime - obj.startTime;
-            const lengthVh = totalDistanceVh * (durationMs / scrollDurationMs);
-            note.style.height = `max(30px, ${lengthVh}vh)`;
-        } else {
-            note.classList.add('note');
-            note.style.height = '30px';
-        }
-        
-        laneEl.appendChild(note);
-        
-        const totalLifeTime = scrollDurationMs + (obj.endTime - obj.startTime);
-        setTimeout(() => {
-            if (note.parentNode) note.remove();
-        }, totalLifeTime + 500);
-        
-        setTimeout(() => {
-            const keyPress = laneEl.querySelector('.key-press');
-            if (keyPress) {
-                keyPress.classList.add('active');
-                const holdTime = obj.isLN ? (obj.endTime - obj.startTime) : 100;
-                setTimeout(() => {
-                    keyPress.classList.remove('active');
-                }, holdTime);
-            }
-        }, timeToHitMs);
-    }
-
-    loadOsuMap();
+    }, 70); 
 </script>
 
 </body>
